@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/LukasSelin/gowl/internal/gocode"
+	"github.com/LukasSelin/godesign/internal/gocode"
 	"github.com/LukasSelin/gowl/lint"
 	"github.com/LukasSelin/gowl/owl"
 )
@@ -32,7 +32,7 @@ func cmdPlan(args []string) int {
 		return exitProblem
 	}
 	if len(files) < 1 || len(files) > 2 {
-		fmt.Fprintln(os.Stderr, "gowl plan: need a plan file, and at most one module directory")
+		fmt.Fprintln(os.Stderr, "godesign plan: need a plan file, and at most one module directory")
 		return exitProblem
 	}
 	root := "."
@@ -40,7 +40,7 @@ func cmdPlan(args []string) int {
 		root = files[1]
 	}
 	if isInvariants(files[0]) {
-		fmt.Fprintf(os.Stderr, "gowl plan: %s holds the invariants, not a plan; gowl invariants checks it\n", filepath.ToSlash(files[0]))
+		fmt.Fprintf(os.Stderr, "godesign plan: %s holds the invariants, not a plan; godesign invariants checks it\n", filepath.ToSlash(files[0]))
 		return exitProblem
 	}
 
@@ -106,7 +106,7 @@ func cmdConform(args []string) int {
 	var named []string
 	fs.Func("design", "a plan file to check against; may be repeated (default: the plans under design/ that differ from the base)", func(s string) error {
 		if isInvariants(s) {
-			return fmt.Errorf("%s holds the invariants, not a plan; gowl invariants checks it", filepath.ToSlash(s))
+			return fmt.Errorf("%s holds the invariants, not a plan; godesign invariants checks it", filepath.ToSlash(s))
 		}
 		named = append(named, s)
 		return nil
@@ -116,7 +116,7 @@ func cmdConform(args []string) int {
 		return exitProblem
 	}
 	if len(dirs) > 1 {
-		fmt.Fprintln(os.Stderr, "gowl conform: need at most one module directory")
+		fmt.Fprintln(os.Stderr, "godesign conform: need at most one module directory")
 		return exitProblem
 	}
 	root := "."

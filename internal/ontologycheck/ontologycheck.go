@@ -1,13 +1,13 @@
-// Command ontology-check runs gowl's linter and EL reasoner over an ontology
+// Package ontologycheck runs gowl's linter and EL reasoner over an ontology
 // edit and reports what the edit changed: new lint findings, classes that
 // became unsatisfiable, and subsumptions the reasoner now derives that nobody
 // asserted.
 //
-// It has three modes:
+// godesign runs it in three modes:
 //
-//	ontology-check pre    < hook.json   snapshot a .ofn file before an edit
-//	ontology-check post   < hook.json   compare the edited file with the snapshot
-//	ontology-check compare before.ofn after.ofn
+//	godesign hook ontology-check pre    < hook.json   snapshot a .ofn file before an edit
+//	godesign hook ontology-check post   < hook.json   compare the edited file with the snapshot
+//	godesign hook ontology-check compare before.ofn after.ofn
 //
 // pre and post are Claude Code PreToolUse/PostToolUse hooks. post blocks (asks
 // the agent to fix the edit) when the file no longer parses, when a class
@@ -15,7 +15,7 @@
 // error-level lint finding appears; anything else it finds is passed back as
 // context. compare prints the same report for a human or a skill, and exits 1
 // when post would have blocked.
-package main
+package ontologycheck
 
 import (
 	"bytes"
@@ -39,26 +39,6 @@ import (
 // maxListed caps every list in the report, so one sweeping edit cannot flood
 // the agent's context.
 const maxListed = 15
-
-func main() {
-	if len(os.Args) < 2 {
-		usage()
-	}
-	switch os.Args[1] {
-	case "pre":
-		os.Exit(runPre())
-	case "post":
-		os.Exit(runPost())
-	case "compare":
-		os.Exit(runCompare(os.Args[2:]))
-	}
-	usage()
-}
-
-func usage() {
-	fmt.Fprintln(os.Stderr, "usage: ontology-check pre|post < hook.json\n       ontology-check compare before.ofn after.ofn")
-	os.Exit(2)
-}
 
 // --- hook plumbing -----------------------------------------------------------
 
@@ -96,14 +76,17 @@ func snapshotPath(session, file string) string {
 		session = "nosession"
 	}
 	sum := sha256.Sum256([]byte(strings.ToLower(file)))
-	return filepath.Join(os.TempDir(), "gowl-ontology-check", session, hex.EncodeToString(sum[:8]))
+	return filepath.Join(os.TempDir(), "godesign-ontology-check", session, hex.EncodeToString(sum[:8]))
 }
 
 // absentMarker is written instead of a snapshot when the file does not exist
 // yet, so post can tell "new file" from "no snapshot taken".
 const absentMarker = "\x00absent\x00"
 
-func runPre() int {
+// Pre is the PreToolUse hook: it reads the hook payload from stdin and, when
+// the tool is about to change a .ofn file, keeps the file's current content for
+// Post. It never refuses the edit, so it always returns 0.
+func Pre() int {
 	in, file := readHook()
 	if file == "" {
 		return 0
@@ -122,7 +105,10 @@ func runPre() int {
 	return 0
 }
 
-func runPost() int {
+// Post is the PostToolUse hook: it compares the edited .ofn file with what Pre
+// kept and writes the hook's JSON answer to stdout, blocking the edit when it
+// broke the ontology. It returns 0; the verdict is in the JSON.
+func Post() int {
 	in, file := readHook()
 	if file == "" {
 		return 0
@@ -181,9 +167,13 @@ func displayPath(cwd, file string) string {
 	return filepath.ToSlash(file)
 }
 
-func runCompare(args []string) int {
+// Compare prints the report for two versions of an ontology, named by args as
+// before.ofn and after.ofn. It returns 1 when Post would have blocked the
+// change, and 2 when either file cannot be read.
+func Compare(args []string) int {
 	if len(args) != 2 {
-		usage()
+		fmt.Fprintln(os.Stderr, "usage: godesign hook ontology-check compare before.ofn after.ofn")
+		return 2
 	}
 	before, err := os.ReadFile(args[0])
 	if err != nil {

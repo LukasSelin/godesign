@@ -1,5 +1,5 @@
 // Package gocode describes a Go module's code as an OWL 2 ontology. It is what
-// "gowl gocode" runs, and what examples/self runs on gowl itself.
+// "godesign gocode" runs, and what examples/self runs on gowl itself.
 //
 // Build takes the root of a module — the directory holding its go.mod. The
 // module has to build. Its own packages are read from source; everything they
@@ -72,7 +72,7 @@ const (
 )
 
 // packageLocalName is the local name of the individual standing for the
-// package with the given import path: github.com/LukasSelin/gowl/internal/gocode
+// package with the given import path: github.com/LukasSelin/godesign/internal/gocode
 // becomes package.github.com.LukasSelin.gowl.internal.gocode. The mapping loses
 // where the slashes were, so
 // a/b.c and a.b/c share a name; Go module paths make that rare in practice.
@@ -301,10 +301,10 @@ func BuildPrefixed(root string, pkgPrefix string) (*owl.Ontology, error) {
 	}
 
 	iri := owl.IRI(selfIRI)
-	about := "gowl's own Go code, described as an OWL 2 ontology by examples/self."
+	about := "gowl's own Go code, described as an OWL 2 ontology by godesign gocode."
 	if module != selfModule {
 		iri = owl.IRI("https://" + module)
-		about = module + "'s Go code, described as an OWL 2 ontology by gowl gocode."
+		about = module + "'s Go code, described as an OWL 2 ontology by godesign gocode."
 	}
 	o := owl.New(iri)
 	o.Prefix("", iri+"#")

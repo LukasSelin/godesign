@@ -5,28 +5,28 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/LukasSelin/gowl/internal/gocode"
+	"github.com/LukasSelin/godesign/internal/gocode"
 	"github.com/LukasSelin/gowl/lint"
 	"github.com/LukasSelin/gowl/owl"
 )
 
-// The committed gowl.ofn must be what the generator produces from the code as
+// The committed godesign.ofn must be what the generator produces from the code as
 // it is now. A change to an exported type, a doc comment or an import shows up
 // here; regenerate with:
 //
-//	go run ./examples/self > examples/self/gowl.ofn
+//	go run ./examples/self > examples/self/godesign.ofn
 func TestCommittedOntologyIsCurrent(t *testing.T) {
 	o, err := gocode.BuildPrefixed("../..", pkgPrefix)
 	if err != nil {
 		t.Fatal(err)
 	}
-	want, err := os.ReadFile("gowl.ofn")
+	want, err := os.ReadFile("godesign.ofn")
 	if err != nil {
 		t.Fatal(err)
 	}
 	got := o.Functional()
 	if strings.ReplaceAll(string(want), "\r\n", "\n") != got {
-		t.Fatal("examples/self/gowl.ofn is stale; regenerate with: go run ./examples/self > examples/self/gowl.ofn")
+		t.Fatal("examples/self/godesign.ofn is stale; regenerate with: go run ./examples/self > examples/self/godesign.ofn")
 	}
 	if _, err := owl.ParseFunctionalString(got); err != nil {
 		t.Fatalf("generated document does not parse back: %v", err)
@@ -49,7 +49,7 @@ func TestSelfLintsClean(t *testing.T) {
 	}
 }
 
-// gowl keeps the rules in design/invariants.ofn on every change: its layers,
+// godesign keeps the rules in design/invariants.ofn on every change: its layers,
 // effects at the edges, and the methods of the interfaces everything is written
 // against. The repository has no CI, so this test is what keeps the rules alive
 // outside a Claude Code session, where the invariants-check hook runs them.

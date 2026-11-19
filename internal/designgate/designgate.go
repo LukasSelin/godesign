@@ -1,16 +1,18 @@
-// Command design-gate is a Claude Code PreToolUse hook that keeps a plan ahead
-// of the code. It refuses an Edit or Write that would add an exported Go type
-// no design/*.ofn file names, and tells the agent to plan the type first.
+// Package designgate is a Claude Code PreToolUse hook that keeps a plan ahead
+// of the code, run as "godesign hook design-gate". It refuses an Edit or Write
+// that would add an exported Go type no design/*.ofn file names, and tells the
+// agent to plan the type first.
 //
 // It gates types and nothing else. A bug fix adds none, so it never notices one.
-// Fields, imports and packages are left to "gowl conform" at the end of the turn:
-// telling whether a field is one gocode records takes type-checking the module,
-// which is too slow to do before every edit.
+// Fields, imports and packages are left to "godesign conform" at the end of the
+// turn: telling whether a field is one gocode records takes type-checking the
+// module, which is too slow to do before every edit.
 //
-// It only ever stops an edit it is sure about. Anything it cannot read lets the
-// edit through, and the Stop hook still sees the result. Set GOWL_DESIGN_GATE=off
-// to turn it off.
-package main
+// A module opts in by having a design directory next to its go.mod; in any
+// other module the gate lets every edit through. It only ever stops an edit it
+// is sure about. Anything it cannot read lets the edit through, and the Stop
+// hook still sees the result. Set GODESIGN_GATE=off to turn it off.
+package designgate
 
 import (
 	"encoding/json"
@@ -40,12 +42,11 @@ type hookInput struct {
 	ToolName string `json:"tool_name"`
 }
 
-func main() {
-	os.Exit(run(os.Stdin, os.Stderr))
-}
-
-func run(stdin io.Reader, stderr io.Writer) int {
-	if os.Getenv("GOWL_DESIGN_GATE") == "off" {
+// Run reads a PreToolUse hook payload from stdin and returns the hook's exit
+// status: 2 refuses the edit, with the reason written to stderr, and 0 lets it
+// through.
+func Run(stdin io.Reader, stderr io.Writer) int {
+	if os.Getenv("GODESIGN_GATE") == "off" {
 		return 0
 	}
 	var in hookInput
@@ -60,13 +61,13 @@ func run(stdin io.Reader, stderr io.Writer) int {
   %s
 
 Plan them before writing them. Use the design-first skill, or add each one to a
-design/<change>.ofn file under the names gowl gocode writes, for example:
+design/<change>.ofn file under the names godesign gocode writes, for example:
 
   Declaration(Class(:%s))
 
 Then check the plan and retry this edit:
 
-  go run ./cmd/gowl plan -fail-on warning design/<change>.ofn
+  godesign plan -fail-on warning design/<change>.ofn
 
 If the module already has a type that does this job, use it instead.
 `, strings.Join(unplanned, ", "), unplanned[0])
@@ -85,7 +86,7 @@ func check(in hookInput) []string {
 		return nil
 	}
 	root, ok := moduleRoot(filepath.Dir(path))
-	if !ok || !described(root, path) {
+	if !ok || !optedIn(root) || !described(root, path) {
 		return nil
 	}
 
@@ -152,6 +153,14 @@ func moduleRoot(dir string) (string, bool) {
 		}
 		dir = up
 	}
+}
+
+// optedIn reports whether the module at root keeps its plans in a design
+// directory. Without one there is nothing to hold an edit to, and refusing
+// every new type would only get in the way of a module that never asked.
+func optedIn(root string) bool {
+	info, err := os.Stat(filepath.Join(root, "design"))
+	return err == nil && info.IsDir()
 }
 
 // described reports whether gocode would read path when describing the module

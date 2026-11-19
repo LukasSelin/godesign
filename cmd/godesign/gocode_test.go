@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/LukasSelin/gowl/lint"
 	"github.com/LukasSelin/gowl/owl"
 )
 
@@ -57,8 +58,12 @@ func TestGoCodeWritesToFile(t *testing.T) {
 	if out != "" {
 		t.Errorf("-o should leave stdout empty, got:\n%s", out)
 	}
-	if _, code := capture(t, func() int { return run([]string{"lint", path}) }); code != exitOK {
-		t.Errorf("gowl lint on the written file: exit = %d, want 0", code)
+	o, err := load(path)
+	if err != nil {
+		t.Fatalf("the written file does not parse: %v", err)
+	}
+	if worst, any := lint.MaxSeverity(lint.Run(o, lint.Default())); any && worst >= lint.Error {
+		t.Errorf("the written file has lint errors")
 	}
 }
 

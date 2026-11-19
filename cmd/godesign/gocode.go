@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/LukasSelin/gowl/internal/gocode"
+	"github.com/LukasSelin/godesign/internal/gocode"
 )
 
 // cmdGoCode describes a Go module's code as an ontology: exported types as
@@ -20,7 +20,7 @@ func cmdGoCode(args []string) int {
 		return exitProblem
 	}
 	if len(dirs) > 1 {
-		fmt.Fprintln(os.Stderr, "gowl gocode: need at most one module directory")
+		fmt.Fprintln(os.Stderr, "godesign gocode: need at most one module directory")
 		return exitProblem
 	}
 	root := "."

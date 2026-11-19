@@ -1,36 +1,36 @@
-# The rules gowl's code keeps on every change.
+# The rules godesign's code keeps on every change.
 #
 # A plan in design/ describes one change and is retired once it is merged. This
-# file is not: "gowl invariants" checks the code against it whenever either one
-# changes, and "gowl plan" checks every plan against it before the code is
-# written. Change a rule here first, with a reason, and the code after it.
+# file is not: "godesign invariants" checks the code against it whenever either
+# one changes, and "godesign plan" checks every plan against it before the code
+# is written. Change a rule here first, with a reason, and the code after it.
 #
 # The code supplies the facts: which packages there are, and what each imports.
 # The ClassAssertions below put packages in groups. Every other logical axiom is
 # a rule, checked over those facts under the closed-world assumption: what the
 # code does not do, it does not do. An rdfs:comment on a rule says why it
 # exists, and is what a broken rule is reported by.
+#
+# gowl's packages are external here: godesign uses gowl the way any other
+# program does, through its public packages and at a released version.
 
-Prefix(:=<https://github.com/LukasSelin/gowl/self#>)
+Prefix(:=<https://github.com/LukasSelin/godesign#>)
 Prefix(rdfs:=<http://www.w3.org/2000/01/rdf-schema#>)
 
-Ontology(<https://github.com/LukasSelin/gowl/design/invariants>
+Ontology(<https://github.com/LukasSelin/godesign/design/invariants>
 
     # The words gocode describes the code with.
     Declaration(Class(:Package))
     Declaration(Class(:ExternalPackage))
     Declaration(ObjectProperty(:imports))
-    Declaration(AnnotationProperty(:method))
 
     # Groups.
-    Declaration(Class(:Library))
-    AnnotationAssertion(rdfs:comment :Library "The public packages: what a program using gowl imports.")
     Declaration(Class(:Internal))
-    AnnotationAssertion(rdfs:comment :Internal "Packages only gowl's own tools use.")
+    AnnotationAssertion(rdfs:comment :Internal "Packages only godesign's own command uses.")
     Declaration(Class(:Tool))
     AnnotationAssertion(rdfs:comment :Tool "Commands and examples: programs, at the edge.")
     Declaration(Class(:Pure))
-    AnnotationAssertion(rdfs:comment :Pure "Internal packages that, like the library, do no I/O of their own.")
+    AnnotationAssertion(rdfs:comment :Pure "Internal packages that do no I/O of their own.")
     Declaration(Class(:Effectful))
     AnnotationAssertion(rdfs:comment :Effectful "Standard library packages that reach outside the process: files, processes, the network, logs.")
 
@@ -39,62 +39,20 @@ Ontology(<https://github.com/LukasSelin/gowl/design/invariants>
     SubObjectPropertyOf(:imports :dependsOn)
     TransitiveObjectProperty(:dependsOn)
 
-    Declaration(NamedIndividual(:package.github.com.LukasSelin.gowl.owl))
-    Declaration(NamedIndividual(:package.github.com.LukasSelin.gowl.el))
-    Declaration(NamedIndividual(:package.github.com.LukasSelin.gowl.lint))
-    Declaration(NamedIndividual(:package.github.com.LukasSelin.gowl.vocab))
-    Declaration(NamedIndividual(:package.github.com.LukasSelin.gowl.vocab.dc))
-    Declaration(NamedIndividual(:package.github.com.LukasSelin.gowl.vocab.dcat))
-    Declaration(NamedIndividual(:package.github.com.LukasSelin.gowl.vocab.dcterms))
-    Declaration(NamedIndividual(:package.github.com.LukasSelin.gowl.vocab.foaf))
-    Declaration(NamedIndividual(:package.github.com.LukasSelin.gowl.vocab.org))
-    Declaration(NamedIndividual(:package.github.com.LukasSelin.gowl.vocab.prov))
-    Declaration(NamedIndividual(:package.github.com.LukasSelin.gowl.vocab.rdf))
-    Declaration(NamedIndividual(:package.github.com.LukasSelin.gowl.vocab.rdfs))
-    Declaration(NamedIndividual(:package.github.com.LukasSelin.gowl.vocab.schema))
-    Declaration(NamedIndividual(:package.github.com.LukasSelin.gowl.vocab.skos))
-    Declaration(NamedIndividual(:package.github.com.LukasSelin.gowl.vocab.skosxl))
-    Declaration(NamedIndividual(:package.github.com.LukasSelin.gowl.vocab.time))
-    ClassAssertion(:Library :package.github.com.LukasSelin.gowl.owl)
-    ClassAssertion(:Library :package.github.com.LukasSelin.gowl.el)
-    ClassAssertion(:Library :package.github.com.LukasSelin.gowl.lint)
-    ClassAssertion(:Library :package.github.com.LukasSelin.gowl.vocab)
-    ClassAssertion(:Library :package.github.com.LukasSelin.gowl.vocab.dc)
-    ClassAssertion(:Library :package.github.com.LukasSelin.gowl.vocab.dcat)
-    ClassAssertion(:Library :package.github.com.LukasSelin.gowl.vocab.dcterms)
-    ClassAssertion(:Library :package.github.com.LukasSelin.gowl.vocab.foaf)
-    ClassAssertion(:Library :package.github.com.LukasSelin.gowl.vocab.org)
-    ClassAssertion(:Library :package.github.com.LukasSelin.gowl.vocab.prov)
-    ClassAssertion(:Library :package.github.com.LukasSelin.gowl.vocab.rdf)
-    ClassAssertion(:Library :package.github.com.LukasSelin.gowl.vocab.rdfs)
-    ClassAssertion(:Library :package.github.com.LukasSelin.gowl.vocab.schema)
-    ClassAssertion(:Library :package.github.com.LukasSelin.gowl.vocab.skos)
-    ClassAssertion(:Library :package.github.com.LukasSelin.gowl.vocab.skosxl)
-    ClassAssertion(:Library :package.github.com.LukasSelin.gowl.vocab.time)
+    Declaration(NamedIndividual(:package.github.com.LukasSelin.godesign.internal.gocode))
+    Declaration(NamedIndividual(:package.github.com.LukasSelin.godesign.internal.icv))
+    Declaration(NamedIndividual(:package.github.com.LukasSelin.godesign.internal.designgate))
+    Declaration(NamedIndividual(:package.github.com.LukasSelin.godesign.internal.ontologycheck))
+    ClassAssertion(:Internal :package.github.com.LukasSelin.godesign.internal.gocode)
+    ClassAssertion(:Internal :package.github.com.LukasSelin.godesign.internal.icv)
+    ClassAssertion(:Internal :package.github.com.LukasSelin.godesign.internal.designgate)
+    ClassAssertion(:Internal :package.github.com.LukasSelin.godesign.internal.ontologycheck)
+    ClassAssertion(:Pure :package.github.com.LukasSelin.godesign.internal.icv)
 
-    Declaration(NamedIndividual(:package.github.com.LukasSelin.gowl.internal.gocode))
-    Declaration(NamedIndividual(:package.github.com.LukasSelin.gowl.internal.icv))
-    Declaration(NamedIndividual(:package.github.com.LukasSelin.gowl.internal.rdf))
-    Declaration(NamedIndividual(:package.github.com.LukasSelin.gowl.internal.rdfowl))
-    Declaration(NamedIndividual(:package.github.com.LukasSelin.gowl.internal.vocabgen))
-    ClassAssertion(:Internal :package.github.com.LukasSelin.gowl.internal.gocode)
-    ClassAssertion(:Internal :package.github.com.LukasSelin.gowl.internal.icv)
-    ClassAssertion(:Internal :package.github.com.LukasSelin.gowl.internal.rdf)
-    ClassAssertion(:Internal :package.github.com.LukasSelin.gowl.internal.rdfowl)
-    ClassAssertion(:Internal :package.github.com.LukasSelin.gowl.internal.vocabgen)
-    ClassAssertion(:Pure :package.github.com.LukasSelin.gowl.internal.icv)
-    ClassAssertion(:Pure :package.github.com.LukasSelin.gowl.internal.rdf)
-    ClassAssertion(:Pure :package.github.com.LukasSelin.gowl.internal.rdfowl)
-    ClassAssertion(:Pure :package.github.com.LukasSelin.gowl.internal.vocabgen)
-
-    Declaration(NamedIndividual(:package.github.com.LukasSelin.gowl.cmd.gowl))
-    Declaration(NamedIndividual(:package.github.com.LukasSelin.gowl.cmd.vocabgen))
-    Declaration(NamedIndividual(:package.github.com.LukasSelin.gowl.examples.k8s))
-    Declaration(NamedIndividual(:package.github.com.LukasSelin.gowl.examples.self))
-    ClassAssertion(:Tool :package.github.com.LukasSelin.gowl.cmd.gowl)
-    ClassAssertion(:Tool :package.github.com.LukasSelin.gowl.cmd.vocabgen)
-    ClassAssertion(:Tool :package.github.com.LukasSelin.gowl.examples.k8s)
-    ClassAssertion(:Tool :package.github.com.LukasSelin.gowl.examples.self)
+    Declaration(NamedIndividual(:package.github.com.LukasSelin.godesign.cmd.godesign))
+    Declaration(NamedIndividual(:package.github.com.LukasSelin.godesign.examples.self))
+    ClassAssertion(:Tool :package.github.com.LukasSelin.godesign.cmd.godesign)
+    ClassAssertion(:Tool :package.github.com.LukasSelin.godesign.examples.self)
 
     Declaration(NamedIndividual(:package.os))
     Declaration(NamedIndividual(:package.os.exec))
@@ -116,25 +74,11 @@ Ontology(<https://github.com/LukasSelin/gowl/design/invariants>
     # Rules.
 
     SubClassOf(Annotation(rdfs:comment "Every package is in a group on purpose, so a new one is added here before it is written")
-        :Package ObjectUnionOf(:Library :Internal :Tool))
+        :Package ObjectUnionOf(:Internal :Tool))
 
-    SubClassOf(Annotation(rdfs:comment "owl is the model the rest is built on, so it depends on nothing else in the module")
-        ObjectOneOf(:package.github.com.LukasSelin.gowl.owl) ObjectAllValuesFrom(:imports :ExternalPackage))
+    DisjointClasses(Annotation(rdfs:comment "The pure internal packages do no I/O: effects stay at the edges, in the tools, the hooks and gocode")
+        :Pure ObjectSomeValuesFrom(:dependsOn :Effectful))
 
-    SubClassOf(Annotation(rdfs:comment "The library stands on its own: it never reaches into internal packages or tools")
-        :Library ObjectAllValuesFrom(:imports ObjectUnionOf(:Library :ExternalPackage)))
-
-    DisjointClasses(Annotation(rdfs:comment "The library and the pure internal packages do no I/O: effects stay at the edges, in the tools and in gocode")
-        ObjectUnionOf(:Library :Pure) ObjectSomeValuesFrom(:dependsOn :Effectful))
-
-    SubClassOf(Annotation(rdfs:comment "The invariant checker is the trusted core, so it stays small: owl and the standard library, and nothing else")
-        ObjectOneOf(:package.github.com.LukasSelin.gowl.internal.icv) ObjectAllValuesFrom(:imports ObjectUnionOf(ObjectOneOf(:package.github.com.LukasSelin.gowl.owl) :ExternalPackage)))
-
-    # Contracts. These interfaces are what the rest of the module, and every
-    # program using gowl, is written against; their methods change only here first.
-    AnnotationAssertion(:method :owl.Node "String() string")
-    AnnotationAssertion(:method :owl.Entity "IRI() IRI")
-    AnnotationAssertion(:method :owl.Entity "Kind() Kind")
-    # The seal: only package owl can make an axiom.
-    AnnotationAssertion(:method :owl.Axiom "isAxiom()")
+    SubClassOf(Annotation(rdfs:comment "The invariant checker is the trusted core, so it stays small: gowl's owl package and the standard library, and nothing of godesign's")
+        ObjectOneOf(:package.github.com.LukasSelin.godesign.internal.icv) ObjectAllValuesFrom(:imports :ExternalPackage))
 )

@@ -13,7 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/LukasSelin/gowl/internal/gocode"
+	"github.com/LukasSelin/godesign/internal/gocode"
 	"github.com/LukasSelin/gowl/lint"
 	"github.com/LukasSelin/gowl/owl"
 )
@@ -34,7 +34,7 @@ func cmdSprawl(args []string) int {
 		return exitProblem
 	}
 	if len(dirs) > 1 {
-		fmt.Fprintln(os.Stderr, "gowl sprawl: need at most one module directory")
+		fmt.Fprintln(os.Stderr, "godesign sprawl: need at most one module directory")
 		return exitProblem
 	}
 	root := "."

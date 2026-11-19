@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/LukasSelin/gowl/internal/icv"
+	"github.com/LukasSelin/godesign/internal/icv"
 	"github.com/LukasSelin/gowl/lint"
 	"github.com/LukasSelin/gowl/owl"
 )

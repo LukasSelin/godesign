@@ -1,11 +1,11 @@
-// Command self describes gowl's own Go code as an OWL 2 ontology, so that the
-// repository's linter has a real, non-toy ontology of this repository to run on.
+// Command self describes godesign's own Go code as an OWL 2 ontology, so that
+// gowl's linter has a real, non-toy ontology of this repository to run on.
 // Run it from the repository root:
 //
-//	go run ./examples/self > examples/self/gowl.ofn
-//	go run ./cmd/gowl lint examples/self/gowl.ofn
+//	go run ./examples/self > examples/self/godesign.ofn
+//	gowl lint examples/self/godesign.ofn
 //
-// The generator itself lives in internal/gocode, and "gowl gocode" runs it on
+// The generator itself lives in internal/gocode, and "godesign gocode" runs it on
 // any other Go module. See that package for the mapping.
 package main
 
@@ -14,11 +14,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/LukasSelin/gowl/internal/gocode"
+	"github.com/LukasSelin/godesign/internal/gocode"
 )
 
-// pkgPrefix is the name gowl's own packages are abbreviated under
-const pkgPrefix = "gowl"
+// pkgPrefix is the name godesign's own packages are abbreviated under
+const pkgPrefix = "godesign"
 
 func main() {
 	root := "."

@@ -1,4 +1,4 @@
-package main
+package designgate
 
 import (
 	"bytes"
@@ -25,12 +25,16 @@ Ontology(<https://example.com/store/design/holding>
 )
 `
 
-// module writes a small module and returns its root.
+// module writes a small module that keeps its plans in design/, so the gate
+// applies to it, and returns its root.
 func module(t *testing.T) string {
 	t.Helper()
 	root := t.TempDir()
 	put(t, root, "go.mod", "module example.com/store\n\ngo 1.21\n")
 	put(t, root, "store/store.go", storeSrc)
+	if err := os.Mkdir(filepath.Join(root, "design"), 0o755); err != nil {
+		t.Fatal(err)
+	}
 	return root
 }
 
@@ -152,6 +156,17 @@ func TestCheckAcceptsATypeThePackageHas(t *testing.T) {
 	}
 }
 
+// A module without a design directory never opted in.
+func TestCheckWithoutADesignDirectory(t *testing.T) {
+	root := module(t)
+	if err := os.Remove(filepath.Join(root, "design")); err != nil {
+		t.Fatal(err)
+	}
+	if got := check(addAfterItem(root, "type Holding struct{}")); len(got) != 0 {
+		t.Errorf("unplanned = %v, want none in a module without design/", got)
+	}
+}
+
 func TestCheckOutsideAModule(t *testing.T) {
 	dir := t.TempDir()
 	if got := check(write(dir, "x.go", "package x\n\ntype X struct{}\n")); len(got) != 0 {
@@ -186,7 +201,7 @@ func runPayload(t *testing.T, in hookInput) (int, string) {
 		t.Fatal(err)
 	}
 	var stderr bytes.Buffer
-	return run(bytes.NewReader(payload), &stderr), stderr.String()
+	return Run(bytes.NewReader(payload), &stderr), stderr.String()
 }
 
 func TestRunRefusesWithInstructions(t *testing.T) {
@@ -195,7 +210,7 @@ func TestRunRefusesWithInstructions(t *testing.T) {
 	if code != 2 {
 		t.Errorf("exit = %d, want 2 to refuse the edit", code)
 	}
-	for _, want := range []string{"store.Holding", "design/<change>.ofn", "Declaration(Class(:store.Holding))", "gowl plan", "design-first"} {
+	for _, want := range []string{"store.Holding", "design/<change>.ofn", "Declaration(Class(:store.Holding))", "godesign plan", "design-first"} {
 		if !strings.Contains(msg, want) {
 			t.Errorf("message should contain %q:\n%s", want, msg)
 		}
@@ -204,13 +219,13 @@ func TestRunRefusesWithInstructions(t *testing.T) {
 
 func TestRunLetsThroughWhatItCannotRead(t *testing.T) {
 	var stderr bytes.Buffer
-	if code := run(strings.NewReader("not json"), &stderr); code != 0 {
+	if code := Run(strings.NewReader("not json"), &stderr); code != 0 {
 		t.Errorf("exit = %d, want 0", code)
 	}
 }
 
 func TestRunCanBeTurnedOff(t *testing.T) {
-	t.Setenv("GOWL_DESIGN_GATE", "off")
+	t.Setenv("GODESIGN_GATE", "off")
 	root := module(t)
 	if code, msg := runPayload(t, addAfterItem(root, "type Holding struct{}")); code != 0 {
 		t.Errorf("exit = %d, want 0\n%s", code, msg)
