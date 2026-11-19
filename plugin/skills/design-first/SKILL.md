@@ -1,6 +1,6 @@
 ---
 name: design-first
-description: Plan a Go change as an OWL ontology (design/<change>.ofn) before writing the code, check the plan against the module with gowl, then implement to it and verify the code matches. Use before adding or reshaping exported Go types, struct fields, interfaces, packages or imports between packages, when asked to build or implement a feature, or when the design-gate hook refuses an edit. Skip it for a change that adds no exported structure, such as most bug fixes.
+description: Plan a Go change as an OWL ontology (design/<change>.ofn) before writing the code, check the plan against the module with godesign, then implement to it and verify the code matches. Use before adding or reshaping exported Go types, struct fields, interfaces, packages or imports between packages, when asked to build or implement a feature, or when the design-gate hook refuses an edit. Skip it for a change that adds no exported structure, such as most bug fixes.
 argument-hint: "<what the change should do>"
 ---
 
@@ -9,7 +9,7 @@ argument-hint: "<what the change should do>"
 The plan is written first because that is when it is cheap to be wrong. A type
 that repeats an existing one is one line to delete in a plan, and a package to
 unpick once the code exists. Afterwards the plan keeps the implementation
-honest: `gowl conform` compares the two, so a type that crept in or a promise
+honest: `godesign conform` compares the two, so a type that crept in or a promise
 that was dropped shows up instead of passing unnoticed.
 
 A plan covers structure only: exported types, their fields, the interfaces they
@@ -24,7 +24,7 @@ is in, which interfaces may not change. Those are not in a plan but in
 ## 1. See what is already there
 
 ```bash
-go run ./cmd/gowl gocode -o <scratch>/now.ofn .
+godesign gocode -o <scratch>/now.ofn .
 ```
 
 Write that to the session scratchpad, not the repository. Search it for types
@@ -34,8 +34,10 @@ use, in `Prefix(:=<...>)`.
 ## 2. Write the plan
 
 Create `design/<change>.ofn` next to the module's `go.mod`, named after the
-change. Name only what the change adds or alters, plus the existing types those
-additions point at. Names are the ones `gowl gocode` writes:
+change. In a module with no `design/` directory yet, this creates it, which
+also turns the plugin's Go checks on for the module. Name only what the
+change adds or alters, plus the existing types those additions point at.
+Names are the ones `godesign gocode` writes:
 
 | In Go | In the plan |
 |---|---|
@@ -44,8 +46,8 @@ additions point at. Names are the ones `gowl gocode` writes:
 | field holding a basic type: `Count int` | `Declaration(DataProperty(:store.Holding.Count))`, `DataPropertyDomain(:store.Holding.Count :store.Holding)`, `DataPropertyRange(:store.Holding.Count xsd:integer)` |
 | satisfies module interface `store.Priced` | `SubClassOf(:store.Holding :store.Priced)` |
 | interface method `Price(item Item) (int, error)` on `store.Priced` | `AnnotationAssertion(:method :store.Priced "Price(item Item) (int, error)")` |
-| package `github.com/LukasSelin/gowl/internal/store` | `ClassAssertion(:Package :package.github.com.LukasSelin.gowl.internal.store)` |
-| that package imports `github.com/LukasSelin/gowl/owl` | `ObjectPropertyAssertion(:imports :package.github.com.LukasSelin.gowl.internal.store :package.github.com.LukasSelin.gowl.owl)` |
+| package `example.com/shop/internal/store` | `ClassAssertion(:Package :package.example.com.shop.internal.store)` |
+| that package imports `example.com/shop/catalog` | `ObjectPropertyAssertion(:imports :package.example.com.shop.internal.store :package.example.com.shop.catalog)` |
 
 Strings are `xsd:string`, booleans `xsd:boolean`, integers `xsd:integer` and
 floats `xsd:double`. A method is written as Go writes it; parameter names are
@@ -82,7 +84,7 @@ and blocks if it does not parse.
 ## 3. Check the plan
 
 ```bash
-go run ./cmd/gowl plan -fail-on warning design/<change>.ofn
+godesign plan -fail-on warning design/<change>.ofn
 ```
 
 This reads the module as though the plan were already code:
@@ -110,7 +112,7 @@ this is the moment to change your mind.
 ## 4. Share the plan
 
 Tell the user what the plan adds in plain terms: the types, how they connect to
-what exists, and anything `gowl plan` flagged that you chose to keep. Carry on
+what exists, and anything `godesign plan` flagged that you chose to keep. Carry on
 without waiting unless they asked to review it first, or a choice is really
 theirs to make, such as a new package.
 
@@ -123,7 +125,7 @@ not the hook.
 ## 6. Verify
 
 ```bash
-go run ./cmd/gowl conform -fail-on warning
+godesign conform -fail-on warning
 ```
 
 It compares the plans under `design/` that differ from the base with the code,
@@ -133,7 +135,7 @@ something that came out differently. The same check runs when you end a turn,
 and reports each finding once.
 
 ```bash
-go run ./cmd/gowl invariants -fail-on warning
+godesign invariants -fail-on warning
 ```
 
 checks the code against `design/invariants.ofn`. Each `invariant-violated` finding

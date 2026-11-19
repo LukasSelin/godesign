@@ -1,0 +1,13 @@
+{
+  "name": "godesign",
+  "owner": {
+    "name": "Lukas Selin"
+  },
+  "plugins": [
+    {
+      "name": "godesign",
+      "source": "./plugin",
+      "description": "Plan Go changes as OWL ontologies before writing them, and hold the code to the plan: a gate on unplanned exported types, gowl's linter and reasoner on every ontology edit, and sprawl, conform and invariants checks before a turn ends."
+    }
+  ]
+}

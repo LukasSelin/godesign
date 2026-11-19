@@ -1,0 +1,38 @@
+{
+  "description": "godesign: a gate on exported Go types no plan names, gowl's linter and reasoner on every .ofn edit, and godesign sprawl, conform and invariants before a turn ends. The Go checks apply only to a module with a design/ directory.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh\"", "timeout": 10 }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          { "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/ontology-check.sh\" pre", "timeout": 120 },
+          { "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/design-gate.sh\"", "timeout": 60 }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          { "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/ontology-check.sh\" post", "timeout": 120, "statusMessage": "Linting and classifying the ontology" }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/sprawl-check.sh\"", "timeout": 180, "statusMessage": "Comparing the module's types with the base commit" },
+          { "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/conform-check.sh\"", "timeout": 180, "statusMessage": "Comparing the code with its plan" },
+          { "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/invariants-check.sh\"", "timeout": 180, "statusMessage": "Checking the code against its invariants" }
+        ]
+      }
+    ]
+  }
+}

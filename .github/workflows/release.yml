@@ -1,6 +1,6 @@
 name: Release
 
-# Pushing a tag such as v0.1.0 builds gowl for each platform and publishes the
+# Pushing a tag such as v0.1.0 builds godesign for each platform and publishes the
 # binaries as a GitHub release, for people who want the command without a Go
 # toolchain. The tag is also what `go install ...@latest` resolves to.
 
@@ -19,7 +19,7 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
-          cache-dependency-path: go.mod
+          cache-dependency-path: go.sum
       - run: go vet ./...
       - run: go test ./...
 
@@ -40,7 +40,7 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
-          cache-dependency-path: go.mod
+          cache-dependency-path: go.sum
       - name: Build
         env:
           GOOS: ${{ matrix.goos }}
@@ -48,11 +48,11 @@ jobs:
           CGO_ENABLED: '0'
           TAG: ${{ github.ref_name }}
         run: |
-          name="gowl_${TAG}_${GOOS}_${GOARCH}"
+          name="godesign_${TAG}_${GOOS}_${GOARCH}"
           ext=""
           [ "$GOOS" = windows ] && ext=".exe"
           mkdir -p "dist/$name"
-          go build -trimpath -ldflags "-s -w" -o "dist/$name/gowl$ext" ./cmd/gowl
+          go build -trimpath -ldflags "-s -w" -o "dist/$name/godesign$ext" ./cmd/godesign
           cp LICENSE README.md "dist/$name/"
           cd dist
           if [ "$GOOS" = windows ]; then
@@ -63,7 +63,7 @@ jobs:
           rm -rf "$name"
       - uses: actions/upload-artifact@v7
         with:
-          name: gowl-${{ matrix.goos }}-${{ matrix.goarch }}
+          name: godesign-${{ matrix.goos }}-${{ matrix.goarch }}
           path: dist/*
 
   release:

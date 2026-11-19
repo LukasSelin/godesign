@@ -1,12 +1,12 @@
-Prefix(:=<https://github.com/LukasSelin/godesign#>)
-Prefix(godesign:=<https://github.com/LukasSelin/godesign#package.github.com.LukasSelin.godesign.>)
+Prefix(:=<https://github.com/LukasSelin/godesign/self#>)
+Prefix(godesign:=<https://github.com/LukasSelin/godesign/self#package.github.com.LukasSelin.godesign.>)
 Prefix(owl:=<http://www.w3.org/2002/07/owl#>)
 Prefix(rdf:=<http://www.w3.org/1999/02/22-rdf-syntax-ns#>)
 Prefix(rdfs:=<http://www.w3.org/2000/01/rdf-schema#>)
 Prefix(xsd:=<http://www.w3.org/2001/XMLSchema#>)
 
-Ontology(<https://github.com/LukasSelin/godesign>
-    Annotation(rdfs:comment "github.com/LukasSelin/godesign's Go code, described as an OWL 2 ontology by godesign gocode."^^xsd:string)
+Ontology(<https://github.com/LukasSelin/godesign/self>
+    Annotation(rdfs:comment "godesign's own Go code, described as an OWL 2 ontology by examples/self."^^xsd:string)
     AnnotationAssertion(rdfs:comment :ExternalPackage "A package from outside the github.com/LukasSelin/godesign module that one of its packages imports: part of the standard library, or of a dependency."^^xsd:string)
     AnnotationAssertion(rdfs:comment :Package "A Go package of the github.com/LukasSelin/godesign module."^^xsd:string)
     AnnotationAssertion(rdfs:comment :definedIn "The package whose source declares the subject Go type."^^xsd:string)
@@ -17,7 +17,7 @@ Ontology(<https://github.com/LukasSelin/godesign>
     AnnotationAssertion(rdfs:comment :imports "The subject package imports the object package directly. The object is a :Package or an :ExternalPackage."^^xsd:string)
     AnnotationAssertion(rdfs:comment :method "A method the subject Go interface declares, as Name(parameter types) result types."^^xsd:string)
     AnnotationAssertion(rdfs:comment godesign:cmd.godesign "Command godesign describes a Go module's code as an OWL 2 ontology and holds changes to that code to a design: plans written before the code, and invariants kept on every change."^^xsd:string)
-    AnnotationAssertion(rdfs:comment godesign:examples.self "Command self describes godesign's own Go code as an OWL 2 ontology, so that the repository's linter has a real, non-toy ontology of this repository to run on."^^xsd:string)
+    AnnotationAssertion(rdfs:comment godesign:examples.self "Command self describes godesign's own Go code as an OWL 2 ontology, so that gowl's linter has a real, non-toy ontology of this repository to run on."^^xsd:string)
     AnnotationAssertion(rdfs:comment godesign:internal.designgate "Package designgate is a Claude Code PreToolUse hook that keeps a plan ahead of the code, run as \"godesign hook design-gate\"."^^xsd:string)
     AnnotationAssertion(rdfs:comment godesign:internal.gocode "Package gocode describes a Go module's code as an OWL 2 ontology."^^xsd:string)
     AnnotationAssertion(rdfs:comment godesign:internal.icv "Package icv checks facts against constraints written as OWL 2 axioms, under the closed-world assumption: integrity constraint validation."^^xsd:string)

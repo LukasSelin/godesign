@@ -52,11 +52,12 @@ import (
 	"github.com/LukasSelin/gowl/owl"
 )
 
-// selfModule is gowl's own module path. Its description keeps the IRI it was
-// first written with, selfIRI, so that the design plans written against it
-// stay valid; any other module is named by its module path under https://.
+// selfModule is godesign's own module path. Its description is named selfIRI,
+// under /self, as gowl named its own before godesign moved out of it, so that
+// examples/self and godesign's design files share one namespace; any other
+// module, gowl included, is named by its module path under https://.
 const (
-	selfModule = "github.com/LukasSelin/gowl"
+	selfModule = "github.com/LukasSelin/godesign"
 	selfIRI    = "https://" + selfModule + "/self"
 )
 
@@ -301,7 +302,7 @@ func BuildPrefixed(root string, pkgPrefix string) (*owl.Ontology, error) {
 	}
 
 	iri := owl.IRI(selfIRI)
-	about := "gowl's own Go code, described as an OWL 2 ontology by godesign gocode."
+	about := "godesign's own Go code, described as an OWL 2 ontology by examples/self."
 	if module != selfModule {
 		iri = owl.IRI("https://" + module)
 		about = module + "'s Go code, described as an OWL 2 ontology by godesign gocode."

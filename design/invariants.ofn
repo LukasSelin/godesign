@@ -14,7 +14,7 @@
 # gowl's packages are external here: godesign uses gowl the way any other
 # program does, through its public packages and at a released version.
 
-Prefix(:=<https://github.com/LukasSelin/godesign#>)
+Prefix(:=<https://github.com/LukasSelin/godesign/self#>)
 Prefix(rdfs:=<http://www.w3.org/2000/01/rdf-schema#>)
 
 Ontology(<https://github.com/LukasSelin/godesign/design/invariants>

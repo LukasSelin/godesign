@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Claude Code Stop hook: before the agent finishes a turn that changed Go code
 # or the invariants themselves, check the code against design/invariants.ofn
-# with "gowl invariants", and hand anything it finds back to the agent - once.
+# with "godesign invariants", and hand anything it finds back to the agent - once.
 # Every finding reported is recorded for the session, so none is repeated and
 # the hook cannot keep the agent going round in a loop.
 #
@@ -9,16 +9,19 @@
 # checked too: change the rule first, and see at once what the code says.
 #
 # The base is where this branch left the default branch, as for conform-check.
-# Set GOWL_DESIGN_BASE to compare with another commit.
+# Set GODESIGN_DESIGN_BASE to compare with another commit.
 set -u
 
 input="$(cat)"
 here="$(cd "$(dirname "$0")" && pwd)"
-root="$(cd "$here/../.." && pwd)"
+root="${CLAUDE_PROJECT_DIR:-$PWD}"
+
+# A module opts in to these checks by keeping its plans in design/.
+[ -d "$root/design" ] || exit 0
 
 [ -f "$root/design/invariants.ofn" ] || exit 0
 
-base="${GOWL_DESIGN_BASE:-}"
+base="${GODESIGN_DESIGN_BASE:-}"
 if [ -z "$base" ]; then
 	for ref in origin/HEAD origin/main origin/master main master; do
 		base="$(git -C "$root" merge-base HEAD "$ref" 2>/dev/null)" && [ -n "$base" ] && break
@@ -33,7 +36,7 @@ fi
 
 session="$(printf '%s' "$input" | tr -d '\r\n' |
 	sed -n 's/.*"session_id"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | tr -cd 'A-Za-z0-9._-')"
-state="${TMPDIR:-/tmp}/gowl-invariants"
+state="${TMPDIR:-/tmp}/godesign-invariants"
 mkdir -p "$state"
 seen="$state/${session:-nosession}.seen"
 last="$state/${session:-nosession}.tree"
@@ -57,17 +60,7 @@ if [ "$sum" = e69de29bb2d1d6434b8b29ae775ad8c2e48c5391 ] ||
 	exit 0
 fi
 
-# Its own binary: the other Stop hooks build theirs at the same moment.
-bin="$here/bin/gowl-invariants"
-case "$(uname -s)" in MINGW* | MSYS* | CYGWIN*) bin="$bin.exe" ;; esac
-# A tree that does not build cannot be described, so a failed build skips the
-# check.
-if ! (cd "$root" && go build -o "$bin" ./cmd/gowl) >/dev/null 2>&1; then
-	echo "invariants-check: the module does not build; skipping" >&2
-	exit 0
-fi
-
-report="$(cd "$root" && "$bin" invariants -fail-on warning -seen "$seen" 2>&1)"
+report="$(cd "$root" && bash "$here/godesign.sh" invariants -fail-on warning -seen "$seen" 2>&1)"
 status=$?
 if [ "$status" -gt 1 ]; then
 	echo "invariants-check: skipping: $(printf '%s' "$report" | head -n 3)" >&2
@@ -78,7 +71,7 @@ printf '%s\n' "$sum" >"$last"
 
 # Exit status 2 keeps the agent working, with this as its next instruction.
 cat >&2 <<EOF
-Before you finish: gowl invariants checked the code against
+Before you finish: godesign invariants checked the code against
 design/invariants.ofn, the rules it keeps on every change, and some do not hold.
 
 $report

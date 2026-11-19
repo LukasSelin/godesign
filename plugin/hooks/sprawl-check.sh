@@ -1,18 +1,22 @@
 #!/usr/bin/env bash
 # Claude Code Stop hook: before the agent finishes a turn that changed Go code,
-# compare the module's exported types with the base commit using "gowl sprawl",
+# compare the module's exported types with the base commit using "godesign sprawl",
 # and hand anything it finds back to the agent - once. Every finding reported
 # is recorded for the session, so none is repeated and the hook cannot keep the
 # agent going round in a loop.
 #
-# The base is HEAD, so the check covers uncommitted work. Set GOWL_SPRAWL_BASE
+# The base is HEAD, so the check covers uncommitted work. Set GODESIGN_SPRAWL_BASE
 # to another commit, such as origin/main, to cover a whole branch.
 set -u
 
 input="$(cat)"
 here="$(cd "$(dirname "$0")" && pwd)"
-root="$(cd "$here/../.." && pwd)"
-base="${GOWL_SPRAWL_BASE:-HEAD}"
+root="${CLAUDE_PROJECT_DIR:-$PWD}"
+
+# A module opts in to these checks by keeping its plans in design/.
+[ -d "$root/design" ] || exit 0
+
+base="${GODESIGN_SPRAWL_BASE:-HEAD}"
 
 if ! git -C "$root" rev-parse --verify --quiet "$base^{commit}" >/dev/null 2>&1; then
 	echo "sprawl-check: $base is not a commit; skipping" >&2
@@ -21,7 +25,7 @@ fi
 
 session="$(printf '%s' "$input" | tr -d '\r\n' |
 	sed -n 's/.*"session_id"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | tr -cd 'A-Za-z0-9._-')"
-state="${TMPDIR:-/tmp}/gowl-sprawl"
+state="${TMPDIR:-/tmp}/godesign-sprawl"
 mkdir -p "$state"
 seen="$state/${session:-nosession}.seen"
 last="$state/${session:-nosession}.tree"
@@ -45,16 +49,7 @@ if [ "$sum" = e69de29bb2d1d6434b8b29ae775ad8c2e48c5391 ] ||
 	exit 0
 fi
 
-bin="$here/bin/gowl"
-case "$(uname -s)" in MINGW* | MSYS* | CYGWIN*) bin="$bin.exe" ;; esac
-# The go command's cache makes this cheap when nothing changed. A tree that
-# does not build cannot be described either, so a failed build skips the check.
-if ! (cd "$root" && go build -o "$bin" ./cmd/gowl) >/dev/null 2>&1; then
-	echo "sprawl-check: the module does not build; skipping" >&2
-	exit 0
-fi
-
-report="$("$bin" sprawl -base "$base" -fail-on info -seen "$seen" "$root" 2>&1)"
+report="$(bash "$here/godesign.sh" sprawl -base "$base" -fail-on info -seen "$seen" "$root" 2>&1)"
 status=$?
 if [ "$status" -gt 1 ]; then
 	echo "sprawl-check: skipping: $(printf '%s' "$report" | head -n 3)" >&2
@@ -65,7 +60,7 @@ printf '%s\n' "$sum" >"$last"
 
 # Exit status 2 keeps the agent working, with this as its next instruction.
 cat >&2 <<EOF
-Before you finish: gowl sprawl compared the module's exported types with $base,
+Before you finish: godesign sprawl compared the module's exported types with $base,
 and this change grows the module beside its existing types rather than
 through them.
 
