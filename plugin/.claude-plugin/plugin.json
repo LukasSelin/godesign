@@ -1,7 +1,7 @@
 {
   "name": "godesign",
   "description": "Plan Go changes as OWL ontologies before writing them, and hold the code to the plan: a gate on unplanned exported types, gowl's linter and reasoner on every ontology edit, and sprawl, conform and invariants checks before a turn ends.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": {
     "name": "Lukas Selin"
   },
